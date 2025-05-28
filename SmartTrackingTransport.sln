@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartTrackingTransport", "SmartTrackingTransport\SmartTrackingTransport.csproj", "{5561125F-4936-4FEC-A535-F9B29AAE16BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartTrackingTransport.AppHost", "SmartTrackingTransport.AppHost\SmartTrackingTransport.AppHost.csproj", "{58AFFFEF-E0B0-4735-B49B-11D48F9F5227}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartTrackingTransport.ServiceDefaults", "SmartTrackingTransport.ServiceDefaults\SmartTrackingTransport.ServiceDefaults.csproj", "{CF080549-3468-479D-82BC-A6A69A3749BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "core\Core.csproj", "{DB9870CD-C317-4922-9E7F-484907E50BB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{F4972EE0-C78F-4965-B55A-6FF8F365EE45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services.csproj", "{F5F596E4-1570-4835-9325-5DBDD098BBC7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5561125F-4936-4FEC-A535-F9B29AAE16BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5561125F-4936-4FEC-A535-F9B29AAE16BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5561125F-4936-4FEC-A535-F9B29AAE16BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5561125F-4936-4FEC-A535-F9B29AAE16BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58AFFFEF-E0B0-4735-B49B-11D48F9F5227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58AFFFEF-E0B0-4735-B49B-11D48F9F5227}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58AFFFEF-E0B0-4735-B49B-11D48F9F5227}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58AFFFEF-E0B0-4735-B49B-11D48F9F5227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF080549-3468-479D-82BC-A6A69A3749BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF080549-3468-479D-82BC-A6A69A3749BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF080549-3468-479D-82BC-A6A69A3749BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF080549-3468-479D-82BC-A6A69A3749BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB9870CD-C317-4922-9E7F-484907E50BB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB9870CD-C317-4922-9E7F-484907E50BB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB9870CD-C317-4922-9E7F-484907E50BB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB9870CD-C317-4922-9E7F-484907E50BB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4972EE0-C78F-4965-B55A-6FF8F365EE45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4972EE0-C78F-4965-B55A-6FF8F365EE45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4972EE0-C78F-4965-B55A-6FF8F365EE45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4972EE0-C78F-4965-B55A-6FF8F365EE45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5F596E4-1570-4835-9325-5DBDD098BBC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5F596E4-1570-4835-9325-5DBDD098BBC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5F596E4-1570-4835-9325-5DBDD098BBC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5F596E4-1570-4835-9325-5DBDD098BBC7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
