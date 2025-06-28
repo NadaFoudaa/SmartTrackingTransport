@@ -13,7 +13,6 @@ namespace Infrastucture.Entities
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string LicenseNumber { get; set; }
-        public Buses Bus { get; set; }
         public Bus Buses { get; set; }
         public DriverStatus Status { get; set; }
         public ICollection<Trips> Trip { get; set; }

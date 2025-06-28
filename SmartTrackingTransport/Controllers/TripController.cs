@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Services.Services.TripService.DTO;
 using Services.Services.TripService;
+using Services.Services.TripService.DTO;
+using Services.Services.Tripv2Service;
+using Services.Services.Tripv2Service.DTO;
 
 namespace SmartTrackingTransport.Controllers
 {
@@ -8,16 +10,16 @@ namespace SmartTrackingTransport.Controllers
 	[Route("api/[controller]")]
 	public class TripController : ControllerBase
 	{
-		private readonly ITripService _tripService;
+        private readonly ITripv2Service _tripService;
 
-		public TripController(ITripService tripService)
-		{
-			_tripService = tripService;
-		}
+        public TripController(ITripv2Service tripService)
+        {
+            _tripService = tripService;
+        }
 
-		// GET: api/trip
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<TripDto>>> GetAllTrips()
+        // GET: api/trip
+        [HttpGet]
+		public async Task<ActionResult<IEnumerable<Tripv2Dto>>> GetAllTrips()
 		{
 			var trips = await _tripService.GetAllTripsAsync();
 			return Ok(trips);
@@ -25,7 +27,7 @@ namespace SmartTrackingTransport.Controllers
 
 		// GET: api/trip/{id}
 		[HttpGet("{id}")]
-		public async Task<ActionResult<TripDto>> GetTripById(int id)
+		public async Task<ActionResult<Tripv2Dto>> GetTripById(int id)
 		{
 			var trip = await _tripService.GetTripByIdAsync(id);
 			if (trip == null) return NotFound();

@@ -58,6 +58,25 @@ namespace Infrastructure.Repos
 
 			return await query.FirstOrDefaultAsync(predicate);
 		}
+        public IQueryable<Bus> GetQueryable()
+        {
+            return _transportContext.Bus; // or _dbSet if you're using base repository
+        }
+        public async Task<IEnumerable<Bus>> GetAllBusesWithRouteAsync(string[] includes = null)
+        {
+            IQueryable<Bus> query = _transportContext.Bus;
 
-	}
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.ToListAsync();
+        }
+
+
+    }
 }

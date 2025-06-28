@@ -65,15 +65,12 @@ namespace SmartTrackingTransport
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
-            builder.Services.AddScoped<IBusRepository, BusRepository>();
             builder.Services.AddScoped<IBusv2Repository, Busv2Repository>();
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IUnitOfWorkv2, UnitOfWorkv2>();
-            builder.Services.AddScoped<IBusService, BusService>();
             builder.Services.AddScoped<IBusv2Service, Busv2Service>();
-            builder.Services.AddScoped<ITripService, TripService>();
             builder.Services.AddScoped<ITripv2Service, Tripv2Service>();
+            builder.Services.AddScoped<ITrackingService, TrackingService>();
             builder.Services.AddScoped<IBusTripService, BusTripService>();
             builder.Services.AddScoped<ILostItemsService, LostItemService>();
             builder.Services.AddScoped<IDriverService, DriverService>();

@@ -8,6 +8,5 @@ namespace Infrastructure.Interfaces
 		IGenericRepository<TEntity> Repository<TEntity>() where TEntity : class;
 		Task<int> Complete();
 		IBusv2Repository Busv2Repository { get; }
-
 	}
 }

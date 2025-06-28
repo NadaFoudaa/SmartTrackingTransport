@@ -19,7 +19,6 @@ namespace Core.Entities
         public Driver Driver { get; set; }
         public int? RouteId { get; set; }
         public Route Route { get; set; }
-
         public ICollection<BusTrip> BusTrips { get; set; }
        public ICollection<TrackingData> TrackingData { get; set; }
     }

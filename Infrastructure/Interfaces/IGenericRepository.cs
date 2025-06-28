@@ -16,7 +16,6 @@ namespace Infrastructure.Interfaces
         void Update(T entity);
         void Delete(T entity);
         Task<IReadOnlyList<T>> FindAllAsync(Expression<Func<T, bool>> predicate);
-
         Task<IReadOnlyList<T>> GetAllIncludingAsync(params Expression<Func<T, object>>[] includes);
         Task<IReadOnlyList<T>> FindAllIncludingAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
         Task<T?> GetFirstOrDefaultIncludingAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);

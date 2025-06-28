@@ -4,6 +4,7 @@ using Infrastucture.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Core.Migrations
 {
     [DbContext(typeof(TransportContext))]
-    partial class TransportContextModelSnapshot : ModelSnapshot
+    [Migration("20250627204906_RemoveOldStuff")]
+    partial class RemoveOldStuff
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,6 +152,9 @@ namespace Core.Migrations
                     b.Property<int>("RouteId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RouteId1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
@@ -161,6 +167,8 @@ namespace Core.Migrations
                     b.HasIndex("DriverId");
 
                     b.HasIndex("RouteId");
+
+                    b.HasIndex("RouteId1");
 
                     b.ToTable("Trip");
                 });
@@ -313,9 +321,8 @@ namespace Core.Migrations
                         .HasForeignKey("Core.Entities.Bus", "DriverId");
 
                     b.HasOne("Infrastucture.Entities.Route", "Route")
-                        .WithMany("Buses")
-                        .HasForeignKey("RouteId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany("Bus")
+                        .HasForeignKey("RouteId");
 
                     b.Navigation("Driver");
 
@@ -368,10 +375,14 @@ namespace Core.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Infrastucture.Entities.Route", "Route")
-                        .WithMany("Trip")
+                        .WithMany()
                         .HasForeignKey("RouteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Infrastucture.Entities.Route", null)
+                        .WithMany("Trips")
+                        .HasForeignKey("RouteId1");
 
                     b.Navigation("Driver");
 
@@ -416,11 +427,11 @@ namespace Core.Migrations
 
             modelBuilder.Entity("Infrastucture.Entities.Route", b =>
                 {
-                    b.Navigation("Buses");
+                    b.Navigation("Bus");
 
                     b.Navigation("RouteStops");
 
-                    b.Navigation("Trip");
+                    b.Navigation("Trips");
                 });
 #pragma warning restore 612, 618
         }

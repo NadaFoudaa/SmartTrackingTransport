@@ -12,9 +12,9 @@ namespace Services.Services.StopsService
 {
 	public class StopsService : IStopsService
 	{
-		private readonly IUnitOfWork _unitOfWork;
+		private readonly IUnitOfWorkv2 _unitOfWork;
 		private readonly IMapper _mapper;
-		public StopsService(IUnitOfWork unitOfWork,IMapper mapper)
+		public StopsService(IUnitOfWorkv2 unitOfWork,IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_mapper = mapper;

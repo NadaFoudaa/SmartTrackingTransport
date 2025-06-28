@@ -17,9 +17,9 @@ namespace Services.Services.DriverService
         private readonly IGenericRepository<Driver> _driverRepo;
         private readonly IGenericRepository<Trips> _tripRepo;
         private readonly IGenericRepository<TrackingData> _trackingRepo;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWorkv2 _unitOfWork;
 
-        public DriverService(IUnitOfWork unitOfWork)
+        public DriverService(IUnitOfWorkv2 unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _driverRepo = _unitOfWork.Repository<Driver>();

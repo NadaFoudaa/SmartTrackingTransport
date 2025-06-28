@@ -18,9 +18,7 @@ namespace Infrastucture.DbContexts
 		}
         public DbSet<User> Users { get; set; }
         public DbSet<Driver> Drivers { get; set; }
-        public DbSet<Buses> Buses { get; set; }
         public DbSet<Route> Routes { get; set; }
-        public DbSet<Trip> Trips { get; set; }
         public DbSet<Stops> Stops { get; set; }
 
         public DbSet<Trips> Trip { get; set; }

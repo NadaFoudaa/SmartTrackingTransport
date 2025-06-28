@@ -1,4 +1,5 @@
-﻿using Infrastructure.Interfaces;
+﻿using Core.Entities;
+using Infrastructure.Interfaces;
 using Infrastucture.DbContexts;
 using Infrastucture.Entities;
 using System;
@@ -37,7 +38,7 @@ namespace Infrastructure.Repos
 			if (!_repos.ContainsKey(type))
 			{
 				// Handle specialized repositories
-				if (typeof(TEntity) == typeof(Buses))
+				if (typeof(TEntity) == typeof(Bus))
 				{
 					_repos.Add(type, _busRepository);
 				}

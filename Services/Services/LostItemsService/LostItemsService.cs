@@ -7,10 +7,10 @@ namespace Services.Services.LostItemsService
 {
 	public class LostItemService : ILostItemsService
 	{
-		private readonly IUnitOfWork _unitOfWork;
+		private readonly IUnitOfWorkv2 _unitOfWork;
 		private readonly IMapper _mapper;
 
-		public LostItemService(IUnitOfWork unitOfWork, IMapper mapper)
+		public LostItemService(IUnitOfWorkv2 unitOfWork, IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_mapper = mapper;

@@ -3,6 +3,8 @@ using Infrastucture.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Services.Services.BusService;
 using Services.Services.BusService.DTO;
+using Services.Services.Busv2Service;
+using Services.Services.Busv2Service.DTO;
 
 namespace SmartTrackingTransport.Controllers
 {
@@ -10,20 +12,20 @@ namespace SmartTrackingTransport.Controllers
 	[Route("api/[controller]")]
 	public class BusController : ControllerBase
 	{
-		private readonly IBusService _busService;
+        private readonly IBusv2Service _busService;
 
-		public BusController(IBusService busService)
-		{
-			_busService = busService;
-		}
-		[HttpGet("Buses")]
-		public async Task<ActionResult<IEnumerable<BusDto>>> GetAllBuses()
+        public BusController(IBusv2Service busService)
+        {
+            _busService = busService;
+        }
+        [HttpGet("Buses")]
+		public async Task<ActionResult<IEnumerable<Busv2Dto>>> GetAllBuses()
 		{
 			var buses = await _busService.GetAll();
 			return Ok(buses);
 		}
 		[HttpGet("{busId}/abstract")]
-		public async Task<ActionResult<BusAbstractDto>> GetBusAbstract(int busId)
+		public async Task<ActionResult<Busv2AbstractDto>> GetBusAbstract(int busId)
 		{
 			var busAbstract = await _busService.GetBusAbstractAsync(busId);
 			if (busAbstract == null)
@@ -32,7 +34,7 @@ namespace SmartTrackingTransport.Controllers
 			return Ok(busAbstract);
 		}
 		[HttpGet("{busId}/trip-details")]
-		public async Task<ActionResult<BusTripDetailsDto>> GetBusTripDetails(int busId)
+		public async Task<ActionResult<Busv2TripDetailsDto>> GetBusTripDetails(int busId)
 		{
 			var tripDetails = await _busService.GetBusTripDetailsAsync(busId);
 			if (tripDetails == null)
@@ -43,14 +45,14 @@ namespace SmartTrackingTransport.Controllers
 
 
 		[HttpGet("GetBusesFromOrginToDestination")]
-		public async Task<ActionResult<IEnumerable<BusDto>>> GetBuses([FromQuery] string origin, [FromQuery] string destination)
+		public async Task<ActionResult<IEnumerable<Busv2Dto>>> GetBuses([FromQuery] string origin, [FromQuery] string destination)
 		{
 			var buses = await _busService.GetAvailableBusesAsync(origin, destination);
 			return Ok(buses);
 		}
 
 		[HttpGet("{id}")]
-		public async Task<ActionResult<BusDto>> GetBus(int id)
+		public async Task<ActionResult<Busv2Dto>> GetBus(int id)
 		{
 			var bus = await _busService.GetBusByIdAsync(id);
 			if (bus == null)
@@ -60,7 +62,7 @@ namespace SmartTrackingTransport.Controllers
 		}
 		
 		[HttpGet("{busNumber}/trips-from-origin")]
-		public async Task<ActionResult<BusTripsDto>> GetBusTripsFromOrigin(
+		public async Task<ActionResult<Busv2TripsDto>> GetBusTripsFromOrigin(
 			string busNumber,
 			[FromQuery] string origin,
 			[FromQuery] DateTime? date = null)
@@ -78,7 +80,7 @@ namespace SmartTrackingTransport.Controllers
 		}
 
 		[HttpGet("{busNumber}/trips-to-destination")]
-		public async Task<ActionResult<BusTripsDto>> GetBusTripsToDestination(
+		public async Task<ActionResult<Busv2TripsDto>> GetBusTripsToDestination(
 			string busNumber,
 			[FromQuery] string destination,
 			[FromQuery] DateTime? date = null)
@@ -94,20 +96,6 @@ namespace SmartTrackingTransport.Controllers
 
 			return Ok(trips);
 		}
-		/*
-		[HttpGet("nearby")]
-		public async Task<ActionResult<IEnumerable<BusDto>>> GetBusesNearLocation(
-			[FromQuery] decimal latitude,
-			[FromQuery] decimal longitude,
-			[FromQuery] double radius = 5.0)
-		{
-			if (radius <= 0 || radius > 50)
-				return BadRequest(new { message = "Radius must be between 0 and 50 km" });
-
-			var buses = await _busService.GetBusesNearLocationAsync(latitude, longitude, radius);
-			return Ok(buses);
-		}
-		*/
 
 	}
 }

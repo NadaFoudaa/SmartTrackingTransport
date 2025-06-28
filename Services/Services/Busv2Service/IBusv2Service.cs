@@ -21,6 +21,7 @@ namespace Services.Services.Busv2Service
 		Task<bool> RemoveBusAsync(int id);
 		Task<Busv2Dto> GetBusByIdAsync(int id);
 		Task<bool> UpdateBusStatusAsync(int id, string status);
-
-	}
+		Task<bool> AssignDriverAsync(AssignDriverDto dto);
+        Task<bool> UnassignDriverAsync(UnassignDriverDto dto);
+    }
 }

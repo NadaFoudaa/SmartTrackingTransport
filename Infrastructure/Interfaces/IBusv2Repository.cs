@@ -11,8 +11,11 @@ namespace Infrastructure.Interfaces
 {
 	public interface IBusv2Repository : IGenericRepository<Bus>
 	{
-		Task<IEnumerable<Bus>> GetAvailableBusesAsync(string startLocation, string destination);
+		Task<IEnumerable<Bus>> GetAvailableBusesAsync(string origin, string destination);
 		Task<Bus> GetBusByIdWithRouteAsync(Expression<Func<Bus, bool>> predicate,string[] includes);
+        Task<IEnumerable<Bus>> GetAllBusesWithRouteAsync(string[] includes = null);
+        IQueryable<Bus> GetQueryable();
 
-	}
+
+    }
 }

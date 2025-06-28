@@ -63,7 +63,7 @@ namespace Services.Services.Tripv2Service
 
             // Get routes with their trips
             var routes = await _unitOfWork.Repository<Route>()
-                .GetAllIncludingAsync(r => r.Trips);
+                .GetAllIncludingAsync(r => r.Trip);
 
             // Filter routes based on origin and destination
             var filteredRoutes = routes
@@ -75,7 +75,7 @@ namespace Services.Services.Tripv2Service
                     RouteId = r.Id,
                     Origin = r.Origin,
                     Destination = r.Destination,
-                    TripsToday = r.Trips
+                    TripsToday = r.Trip
                         .Where(t => DateOnly.FromDateTime(t.StartTime) == date)
                         .OrderBy(t => t.StartTime)
                         .Select(t =>

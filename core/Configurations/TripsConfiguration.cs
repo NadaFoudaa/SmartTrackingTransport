@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,11 +17,12 @@ namespace Core.Configurations
         {
             builder.HasKey(t => t.Id);
 
-            // Trips - Route (required)
-            builder.HasOne(t => t.Route)
-                   .WithMany()
-                   .HasForeignKey(t => t.RouteId)
-                   .OnDelete(DeleteBehavior.Restrict);
+
+           builder
+    .HasOne(t => t.Route)
+    .WithMany(r => r.Trip)
+    .HasForeignKey(t => t.RouteId)
+    .OnDelete(DeleteBehavior.Restrict);
 
             // Trips - Driver (optional)
             builder.HasOne(t => t.Driver)

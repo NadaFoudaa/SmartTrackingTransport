@@ -12,8 +12,7 @@ namespace Infrastucture.Entities
 		public string Origin { get; set; }
 		public string Destination { get; set; }
 		public ICollection<RouteStop> RouteStops { get; set; } = new List<RouteStop>();
-		public ICollection<Trip> Trips { get; set; }
-		public ICollection<Buses> Buses { get; set; }
-
-	}
+        public ICollection<Bus> Buses { get; set; }
+        public ICollection<Trips> Trip { get; set; }
+    }
 }

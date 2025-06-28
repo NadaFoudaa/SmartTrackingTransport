@@ -11,7 +11,7 @@ using Core.Entities;
 
 namespace Services.Services.TrackingService
 {
-    public class TrackingService
+    public class TrackingService : ITrackingService
     {
         private readonly TransportContext _context;
 
@@ -19,9 +19,22 @@ namespace Services.Services.TrackingService
         {
             _context = context;
         }
-
         public async Task<BusTrackingUpdateDto> ProcessTrackingAsync(TrackingDataDto dto)
         {
+            var bus = await _context.Bus
+                .Include(b => b.Route)
+                    .ThenInclude(r => r.RouteStops)
+                        .ThenInclude(rs => rs.Stop)
+                .FirstOrDefaultAsync(b => b.Id == dto.BusId);
+
+            if (bus?.Route == null)
+                throw new Exception("Bus not assigned to a route");
+
+            //  Update the bus’s current coordinates
+            bus.CurrentLatitude = dto.Latitude;
+            bus.CurrentLongitude = dto.Longitude;
+            _context.Bus.Update(bus); // Make sure EF tracks the change
+
             var tracking = new TrackingData
             {
                 BusId = dto.BusId,
@@ -31,16 +44,8 @@ namespace Services.Services.TrackingService
             };
 
             _context.TrackingData.Add(tracking);
+
             await _context.SaveChangesAsync();
-
-            var bus = await _context.Bus
-                .Include(b => b.Route)
-                    .ThenInclude(r => r.RouteStops)
-                        .ThenInclude(rs => rs.Stop)
-                .FirstOrDefaultAsync(b => b.Id == dto.BusId);
-
-            if (bus?.Route == null)
-                throw new Exception("Bus not assigned to a route");
 
             var orderedStops = bus.Route.RouteStops
                 .OrderBy(rs => rs.Order)
@@ -76,6 +81,36 @@ namespace Services.Services.TrackingService
                 DistanceToNextStopMeters = Math.Round(minDistance),
                 EstimatedTimeMinutes = etaMinutes
             };
+        }
+        public async Task<List<DriverTrackingSummaryDto>> GetAllDriverTrackingSummariesAsync()
+        {
+            return await _context.Bus
+                .Include(b => b.Driver)
+                .Include(b => b.Route)
+                    .ThenInclude(r => r.RouteStops)
+                        .ThenInclude(rs => rs.Stop)
+                .Include(b => b.TrackingData)
+                .Where(b => b.Driver != null && b.Route != null)
+                .Select(b => new DriverTrackingSummaryDto
+                {
+                    DriverName = b.Driver.Name,
+                    PhoneNumber = b.Driver.PhoneNumber,
+
+                    BusLicensePlate = b.LicensePlate,
+                    BusModel = b.Model,
+
+                    RouteOrigin = b.Route.Origin,
+                    RouteDestination = b.Route.Destination,
+
+                    CurrentLatitude = b.CurrentLatitude,
+                    CurrentLongitude = b.CurrentLongitude,
+
+                    LastTrackedAt = b.TrackingData
+                        .OrderByDescending(t => t.Timestamp)
+                        .Select(t => (DateTime?)t.Timestamp)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
         }
     }
 }

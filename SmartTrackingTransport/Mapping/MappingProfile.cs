@@ -28,56 +28,6 @@ namespace SmartTrackingTransport.Mappings
             CreateMap<RegisterDto, AppUser>()
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.Email));
 
-            // Bus mappings
-            CreateMap<Buses, BusDto>()
-                            .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
-                            .ForMember(d => d.LicensePlate, o => o.MapFrom(s => s.LicensePlate))
-                            .ForMember(d => d.Capacity, o => o.MapFrom(s => s.Capacity))
-                            .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
-                            .ForMember(d => d.Model, o => o.MapFrom(s => s.Model))
-                            .ForMember(d => d.Origin, o => o.MapFrom(s => s.Route.RouteStops.OrderBy(rs => rs.Order).FirstOrDefault().Stop.Name))
-                            .ForMember(d => d.Destination, o => o.MapFrom(s => s.Route.RouteStops.OrderByDescending(rs => rs.Order).FirstOrDefault().Stop.Name));
-
-            CreateMap<BusDto, Buses>()
-                .ForMember(d => d.Driver, o => o.Ignore())
-                .ForMember(d => d.Route, o => o.Ignore())
-                .ForMember(d => d.Trips, o => o.Ignore())
-                .ForMember(d => d.TrackingData, o => o.Ignore());
-
-            CreateMap<Buses, BusAbstractDto>()
-                .ForMember(d => d.BusNumber, o => o.MapFrom(s => s.LicensePlate))
-                .ForMember(d => d.Origin, o => o.MapFrom(s => s.Route.RouteStops.OrderBy(rs => rs.Order).FirstOrDefault().Stop.Name))
-                .ForMember(d => d.Destination, o => o.MapFrom(s => s.Route.RouteStops.OrderByDescending(rs => rs.Order).FirstOrDefault().Stop.Name));
-
-
-            CreateMap<Buses, BusTripDetailsDto>()
-                .ForMember(d => d.BusNumber, o => o.MapFrom(s => s.LicensePlate))
-                .ForMember(d => d.Origin, o => o.MapFrom(s => s.Route.RouteStops.OrderBy(rs => rs.Order).FirstOrDefault().Stop.Name))
-                .ForMember(d => d.Destination, o => o.MapFrom(s => s.Route.RouteStops.OrderByDescending(rs => rs.Order).FirstOrDefault().Stop.Name))
-                .ForMember(d => d.Stops, o => o.MapFrom(s => s.Route.RouteStops
-                    .OrderBy(rs => rs.Order)
-                    .Select(rs => new StopTimeDto
-                    {
-                        Stop = rs.Stop.Name,
-                        Time = s.Trips.OrderByDescending(t => t.StartTime).FirstOrDefault().StartTime.AddMinutes(rs.Order * 20)
-                    })));
-
-            CreateMap<Buses, BusTripsDto>()
-                .ForMember(d => d.BusNumber, o => o.MapFrom(s => s.LicensePlate))
-                .ForMember(d => d.Origin, o => o.MapFrom(s => s.Route.RouteStops.OrderBy(rs => rs.Order).FirstOrDefault().Stop.Name))
-                .ForMember(d => d.Destination, o => o.MapFrom(s => s.Route.RouteStops.OrderByDescending(rs => rs.Order).FirstOrDefault().Stop.Name))
-                .ForMember(d => d.TripsToday, o => o.MapFrom(s => s.Trips.Select(t => new TripTimeDto
-                {
-                    TripId = t.Id,
-                    StartTime = t.StartTime
-                })));
-
-            CreateMap<Trip, TripTimeDto>()
-                .ForMember(d => d.TripId, o => o.MapFrom(s => s.Id))
-                .ForMember(d => d.StartTime, o => o.MapFrom(s => s.StartTime));
-            // Trip create/update mappings
-
-
             CreateMap<CRUDTripDto, Trips>()
                 .ForMember(d => d.Id, o => o.Ignore())
                 .ForMember(d => d.Route, o => o.Ignore())
@@ -86,7 +36,6 @@ namespace SmartTrackingTransport.Mappings
 
             CreateMap<CRUDDriverDto, Driver>()
                 .ForMember(d => d.Id, o => o.Ignore())
-                .ForMember(d => d.Bus, o => o.Ignore())
                 .ForMember(d => d.Buses, o => o.Ignore())
                 .ForMember(d => d.Trip, o => o.Ignore());
 
@@ -114,16 +63,10 @@ namespace SmartTrackingTransport.Mappings
                 .ForMember(d => d.Origin, o => o.MapFrom(s => s.Origin))
                 .ForMember(d => d.Destination, o => o.MapFrom(s => s.Destination))
                 .ForMember(d => d.RouteStops, o => o.Ignore())
-                .ForMember(d => d.Trips, o => o.Ignore())
+                .ForMember(d => d.Trip, o => o.Ignore())
                 .ForMember(d => d.Buses, o => o.Ignore());
 
             // Trip mappings
-            CreateMap<Trip, TripDto>();
-
-
-            CreateMap<TripDto, Trip>()
-                .ForMember(d => d.Bus, o => o.Ignore())
-                .ForMember(d => d.Route, o => o.Ignore());
 
             CreateMap<LostItem, LostItemDto>()
                 .ForMember(d => d.ContactName, o => o.MapFrom(s => s.Name))
@@ -224,9 +167,6 @@ namespace SmartTrackingTransport.Mappings
                 .ForMember(d => d.Destination, o => o.MapFrom(s => s.Route.RouteStops.OrderByDescending(rs => rs.Order).FirstOrDefault().Stop.Name))
               ;
 
-            CreateMap<Trips, TripTimeDto>()
-                .ForMember(d => d.TripId, o => o.MapFrom(s => s.Id))
-                .ForMember(d => d.StartTime, o => o.MapFrom(s => s.StartTime));
 
             // Trip mappings
             CreateMap<Trips, Tripv2Dto>()

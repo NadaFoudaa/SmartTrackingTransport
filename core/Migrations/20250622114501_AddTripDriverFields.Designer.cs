@@ -4,6 +4,7 @@ using Infrastucture.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Core.Migrations
 {
     [DbContext(typeof(TransportContext))]
-    partial class TransportContextModelSnapshot : ModelSnapshot
+    [Migration("20250622114501_AddTripDriverFields")]
+    partial class AddTripDriverFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,6 +168,59 @@ namespace Core.Migrations
                     b.ToTable("Trip");
                 });
 
+            modelBuilder.Entity("Infrastucture.Entities.Buses", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CurrentLatitude")
+                        .HasPrecision(10, 6)
+                        .HasColumnType("decimal(10,6)");
+
+                    b.Property<decimal>("CurrentLongitude")
+                        .HasPrecision(10, 6)
+                        .HasColumnType("decimal(10,6)");
+
+                    b.Property<int?>("DriverId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LicensePlate")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("RouteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Active");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId")
+                        .IsUnique()
+                        .HasFilter("[DriverId] IS NOT NULL");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("Buses", (string)null);
+                });
+
             modelBuilder.Entity("Infrastucture.Entities.Driver", b =>
                 {
                     b.Property<int>("Id")
@@ -265,6 +321,9 @@ namespace Core.Migrations
                     b.Property<int>("BusId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("BusesId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Latitude")
                         .HasColumnType("decimal(18,2)");
 
@@ -278,7 +337,38 @@ namespace Core.Migrations
 
                     b.HasIndex("BusId");
 
+                    b.HasIndex("BusesId");
+
                     b.ToTable("TrackingData");
+                });
+
+            modelBuilder.Entity("Infrastucture.Entities.Trip", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BusId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RouteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusId");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("Trips");
                 });
 
             modelBuilder.Entity("Infrastucture.Entities.User", b =>
@@ -313,9 +403,8 @@ namespace Core.Migrations
                         .HasForeignKey("Core.Entities.Bus", "DriverId");
 
                     b.HasOne("Infrastucture.Entities.Route", "Route")
-                        .WithMany("Buses")
-                        .HasForeignKey("RouteId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany()
+                        .HasForeignKey("RouteId");
 
                     b.Navigation("Driver");
 
@@ -368,10 +457,26 @@ namespace Core.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Infrastucture.Entities.Route", "Route")
-                        .WithMany("Trip")
+                        .WithMany()
                         .HasForeignKey("RouteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Route");
+                });
+
+            modelBuilder.Entity("Infrastucture.Entities.Buses", b =>
+                {
+                    b.HasOne("Infrastucture.Entities.Driver", "Driver")
+                        .WithOne("Bus")
+                        .HasForeignKey("Infrastucture.Entities.Buses", "DriverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Infrastucture.Entities.Route", "Route")
+                        .WithMany("Buses")
+                        .HasForeignKey("RouteId");
 
                     b.Navigation("Driver");
 
@@ -386,7 +491,30 @@ namespace Core.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Infrastucture.Entities.Buses", null)
+                        .WithMany("TrackingData")
+                        .HasForeignKey("BusesId");
+
                     b.Navigation("Bus");
+                });
+
+            modelBuilder.Entity("Infrastucture.Entities.Trip", b =>
+                {
+                    b.HasOne("Infrastucture.Entities.Buses", "Bus")
+                        .WithMany("Trips")
+                        .HasForeignKey("BusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Infrastucture.Entities.Route", "Route")
+                        .WithMany("Trips")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bus");
+
+                    b.Navigation("Route");
                 });
 
             modelBuilder.Entity("Core.Entities.Bus", b =>
@@ -406,8 +534,18 @@ namespace Core.Migrations
                     b.Navigation("BusTrips");
                 });
 
+            modelBuilder.Entity("Infrastucture.Entities.Buses", b =>
+                {
+                    b.Navigation("TrackingData");
+
+                    b.Navigation("Trips");
+                });
+
             modelBuilder.Entity("Infrastucture.Entities.Driver", b =>
                 {
+                    b.Navigation("Bus")
+                        .IsRequired();
+
                     b.Navigation("Buses")
                         .IsRequired();
 
@@ -420,7 +558,7 @@ namespace Core.Migrations
 
                     b.Navigation("RouteStops");
 
-                    b.Navigation("Trip");
+                    b.Navigation("Trips");
                 });
 #pragma warning restore 612, 618
         }

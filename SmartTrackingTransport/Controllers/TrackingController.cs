@@ -1,21 +1,21 @@
 ﻿using API.SignalR;
+using Core.IdentityEntities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Services.Services.TrackingService;
 using Services.Services.TrackingService.DTO;
 using System;
 using System.Threading.Tasks;
-
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class TrackingController : ControllerBase
     {
-        private readonly TrackingService _trackingService;
+        private readonly ITrackingService _trackingService;
         private readonly IHubContext<TrackingHub> _hub;
 
-        public TrackingController(TrackingService trackingService, IHubContext<TrackingHub> hub)
+        public TrackingController(ITrackingService trackingService, IHubContext<TrackingHub> hub)
         {
             _trackingService = trackingService;
             _hub = hub;
@@ -32,7 +32,6 @@ namespace API.Controllers
 
                 Console.WriteLine("Processed location update");
 
-                // Push to SignalR group "bus_{id}"
                 string groupName = $"bus_{dto.BusId}";
                 await _hub.Clients.Group(groupName).SendAsync("ReceiveLocation", enriched);
 
@@ -44,5 +43,13 @@ namespace API.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+
+        [HttpGet("driver-tracking-summary")]
+        public async Task<IActionResult> GetDriverTrackingSummaries()
+        {
+            var result = await _trackingService.GetAllDriverTrackingSummariesAsync();
+            return Ok(result);
+        }
     }
 }
+
