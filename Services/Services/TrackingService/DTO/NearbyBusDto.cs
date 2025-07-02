@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Services.TrackingService.DTO
 {
-    public class TrackingDataDto
+    public class NearbyBusDto
     {
         public int BusId { get; set; }
-        [Column(TypeName = "decimal(10,7)")]
         public decimal Latitude { get; set; }
-        [Column(TypeName = "decimal(10,7)")]
         public decimal Longitude { get; set; }
+        public int? DriverId { get; set; }
+
+        public string Origin { get; set; }        // From Route.Origin
+        public string Destination { get; set; }   // From Route.Destination
     }
 }

@@ -9,7 +9,9 @@ namespace Services.Services.TrackingService
 {
     public interface ITrackingService
     {
-        Task<BusTrackingUpdateDto> ProcessTrackingAsync(TrackingDataDto dto);
-        Task<List<DriverTrackingSummaryDto>> GetAllDriverTrackingSummariesAsync();
+        Task<BusTrackingLiteDto> QuickUpdateBusLocationAsync(TrackingDataDto dto, DateTime timestamp);
+        Task<BusTrackingUpdateDto> GetBusCurrentTrackingAsync(int busId);
+        Task<LocationDto> GetBusLocationOnlyAsync(int busId);
+        Task<List<NearbyBusDto>> GetNearbyBusesAsync(decimal userLat, decimal userLon, double radiusMeters);
     }
 }

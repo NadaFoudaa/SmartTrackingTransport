@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Entities;
 using Infrastructure.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Services.Services.StopsService.DTO;
 using System;
 using System.Collections.Generic;
@@ -21,9 +22,14 @@ namespace Services.Services.StopsService
 		}
 		public async Task<IEnumerable<StopsDto>> GetAllStopsForRouteAsync(int routeId)
 		{
-			var stops = await _unitOfWork.Repository<RouteStop>().FindAllAsync(rs => rs.RouteId == routeId);
-			return _mapper.Map<IEnumerable<StopsDto>>(stops);
-		}
+            var stops = await _unitOfWork.Repository<RouteStop>()
+                .FindAllAsync(
+                    rs => rs.RouteId == routeId,
+                    include: q => q.Include(rs => rs.Stop)
+                );
+
+            return _mapper.Map<IEnumerable<StopsDto>>(stops);
+        }
 
 		// Get a stop by its ID
 		public async Task<StopsDto> GetStopByIdAsync(int stopId)

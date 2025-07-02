@@ -43,5 +43,20 @@ namespace SmartTrackingTransport.Controllers
             await _busTripService.DeleteAsync(busId, tripId);
             return NoContent();
         }
+        [HttpPost("{tripId}/assign-bus/{busId}")]
+        public async Task<IActionResult> AssignBusToTrip(int tripId, int busId)
+        {
+            var success = await _busTripService.AssignBusToTripAsync(tripId, busId);
+            if (!success) return BadRequest("Assignment failed: trip or bus not found, or already assigned.");
+            return Ok("Bus successfully assigned to trip.");
+        }
+        [HttpDelete("{tripId}/unassign-bus/{busId}")]
+        public async Task<IActionResult> UnassignBusFromTrip(int tripId, int busId)
+        {
+            var success = await _busTripService.UnassignBusFromTripAsync(tripId, busId);
+            if (!success) return NotFound("Bus was not assigned to this trip or doesn't exist.");
+
+            return Ok("Bus unassigned successfully.");
+        }
     }
 }

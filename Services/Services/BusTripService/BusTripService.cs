@@ -52,5 +52,64 @@ namespace Services.Services.BusTripService
                 await _unitOfWork.Complete();
             }
         }
+        public async Task<bool> AssignBusToTripAsync(int tripId, int busId)
+        {
+            var tripRepo = _unitOfWork.Repository<Trips>();
+            var busRepo = _unitOfWork.Repository<Bus>();
+            var busTripRepo = _unitOfWork.Repository<BusTrip>();
+
+            var trip = await tripRepo.GetByIdAsync(tripId);
+            var bus = await busRepo.GetByIdAsync(busId);
+
+            if (trip == null || bus == null || trip.IsDeleted) return false;
+
+            var alreadyAssigned = (await busTripRepo.FindAllAsync(bt => bt.BusId == busId && bt.TripsId == tripId)).Any();
+            if (alreadyAssigned) return false;
+
+            // Link bus to trip
+            busTripRepo.Add(new BusTrip
+            {
+                BusId = busId,
+                TripsId = tripId
+            });
+
+            // Update the bus's route to reflect the trip's route
+            bus.RouteId = trip.RouteId;
+            busRepo.Update(bus);
+
+            await _unitOfWork.Complete();
+            return true;
+        }
+        public async Task<bool> UnassignBusFromTripAsync(int tripId, int busId)
+        {
+            var busTripRepo = _unitOfWork.Repository<BusTrip>();
+            var busRepo = _unitOfWork.Repository<Bus>();
+
+            // Find the bus-trip mapping
+            var mapping = (await busTripRepo.FindAllAsync(bt => bt.TripsId == tripId && bt.BusId == busId))
+                            .FirstOrDefault();
+
+            if (mapping == null) return false;
+
+            // Remove the mapping
+            busTripRepo.Delete(mapping);
+
+            // Check if the bus is still used in other trips
+            var stillAssigned = (await busTripRepo.FindAllAsync(bt => bt.BusId == busId && bt.TripsId != tripId)).Any();
+
+            if (!stillAssigned)
+            {
+                // Only clear RouteId if the bus isn't used in any other trip
+                var bus = await busRepo.GetByIdAsync(busId);
+                if (bus != null)
+                {
+                    bus.RouteId = null;
+                    busRepo.Update(bus);
+                }
+            }
+
+            await _unitOfWork.Complete();
+            return true;
+        }
     }
 }

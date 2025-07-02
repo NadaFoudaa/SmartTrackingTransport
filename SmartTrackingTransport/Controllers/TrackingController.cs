@@ -2,10 +2,12 @@
 using Core.IdentityEntities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Services.Services.TrackingService;
 using Services.Services.TrackingService.DTO;
 using System;
 using System.Threading.Tasks;
+
 namespace API.Controllers
 {
     [ApiController]
@@ -14,42 +16,71 @@ namespace API.Controllers
     {
         private readonly ITrackingService _trackingService;
         private readonly IHubContext<TrackingHub> _hub;
+        private readonly ILogger<TrackingController> _logger;
 
-        public TrackingController(ITrackingService trackingService, IHubContext<TrackingHub> hub)
+        public TrackingController(ITrackingService trackingService, IHubContext<TrackingHub> hub, ILogger<TrackingController> logger)
         {
             _trackingService = trackingService;
             _hub = hub;
+            _logger = logger;
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateLocation([FromBody] TrackingDataDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             try
             {
-                Console.WriteLine($"Received: Bus {dto.BusId} at {dto.Latitude}, {dto.Longitude}");
+                var timestamp = DateTime.UtcNow;
+                var trackingDto = await _trackingService.QuickUpdateBusLocationAsync(dto, timestamp);
 
-                var enriched = await _trackingService.ProcessTrackingAsync(dto);
+                try
+                {
+                    await _hub.Clients.Group(SignalRGroups.BusGroup(dto.BusId))
+                        .SendAsync("ReceiveLocation", trackingDto);
+                }
+                catch (Exception hubEx)
+                {
+                    _logger.LogWarning(hubEx, "SignalR push failed for BusId {BusId}", dto.BusId);
+                }
 
-                Console.WriteLine("Processed location update");
-
-                string groupName = $"bus_{dto.BusId}";
-                await _hub.Clients.Group(groupName).SendAsync("ReceiveLocation", enriched);
-
-                return Ok(enriched);
+                return Ok(trackingDto);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: {ex.Message}");
-                return StatusCode(500, new { error = ex.Message });
+                _logger.LogError(ex, "Failed to update bus location for BusId {BusId}", dto.BusId);
+                return StatusCode(500, new { error = "Internal server error. Please try again later." });
             }
         }
-
-        [HttpGet("driver-tracking-summary")]
-        public async Task<IActionResult> GetDriverTrackingSummaries()
+        [HttpGet("{busId}")]
+        public async Task<IActionResult> GetBusCurrentLocation(int busId)
         {
-            var result = await _trackingService.GetAllDriverTrackingSummariesAsync();
-            return Ok(result);
+            var bus = await _trackingService.GetBusCurrentTrackingAsync(busId);
+
+            if (bus == null)
+                return NotFound("Bus not found or no tracking data");
+
+            return Ok(bus);
+        }
+
+        [HttpGet("{busId}/location")]
+        public async Task<IActionResult> GetBusLocation(int busId)
+        {
+            var location = await _trackingService.GetBusLocationOnlyAsync(busId);
+
+            if (location == null)
+                return NotFound("Bus not found");
+
+            return Ok(location);
+        }
+        [HttpGet("nearby")]
+        public async Task<IActionResult> GetNearbyBuses([FromQuery] decimal latitude, [FromQuery] decimal longitude, [FromQuery] double radiusMeters = 1000)
+        {
+            var buses = await _trackingService.GetNearbyBusesAsync(latitude, longitude, radiusMeters);
+
+            return Ok(buses);
         }
     }
 }
-

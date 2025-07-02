@@ -11,6 +11,6 @@ namespace Services.Services.TrackingService.DTO
 		public int BusId { get; set; }
 		public decimal Latitude { get; set; }
 		public decimal Longitude { get; set; }
-		public DateTime LastUpdated { get; set; }
-	}
+        public DateTime LastUpdated { get; set; }
+    }
 }

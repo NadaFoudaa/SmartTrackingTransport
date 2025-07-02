@@ -21,9 +21,12 @@ namespace SmartTrackingTransport.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateBus(Busv2Dto dto)
         {
-            var success = await _busService.AddBusAsync(dto);
-            if (!success) return BadRequest("Bus creation failed.");
-            return Ok(dto); // Or return the created bus with ID if needed
+            var createdBus = await _busService.AddBusAsync(dto);
+
+            if (createdBus == null)
+                return BadRequest("Bus creation failed.");
+
+            return Ok(createdBus); // returns the populated DTO including Origin, Destination, etc.
         }
 
         [HttpPut("{id}")]

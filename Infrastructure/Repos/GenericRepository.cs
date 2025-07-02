@@ -32,10 +32,16 @@ namespace Infrastructure.Repos
 
         public void Update(T entity)
             => _transportContext.Set<T>().Update(entity);
-        public async Task<IReadOnlyList<T>> FindAllAsync(Expression<Func<T, bool>> predicate)
+        public async Task<IReadOnlyList<T>> FindAllAsync(
+            Expression<Func<T, bool>> predicate,
+            Func<IQueryable<T>, IQueryable<T>> include = null)
         {
-            // Using the predicate to filter the entities
-            return await _transportContext.Set<T>().Where(predicate).ToListAsync();
+            IQueryable<T> query = _transportContext.Set<T>().Where(predicate);
+
+            if (include != null)
+                query = include(query);
+
+            return await query.ToListAsync();
         }
         // New method: Get all with includes
         public async Task<IReadOnlyList<T>> GetAllIncludingAsync(params Expression<Func<T, object>>[] includes)
@@ -78,6 +84,10 @@ namespace Infrastructure.Repos
         public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
         {
             return await _transportContext.Set<T>().FirstOrDefaultAsync(predicate);
+        }
+        public IQueryable<T> GetAll()
+        {
+            return _transportContext.Set<T>();
         }
     }
 }

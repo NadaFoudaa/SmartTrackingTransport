@@ -18,6 +18,8 @@ namespace Core.Configurations
                    .WithMany(r => r.Buses)
                    .HasForeignKey(b => b.RouteId)
                    .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(e => e.CurrentLatitude).HasPrecision(18, 7);
+            builder.Property(e => e.CurrentLongitude).HasPrecision(18, 7);
         }
 
     }

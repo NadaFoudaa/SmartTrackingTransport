@@ -13,5 +13,7 @@ namespace Services.Services.BusTripService
         Task<BusTripDto> GetByIdsAsync(int busId, int tripId);
         Task AddAsync(BusTripDto dto);
         Task DeleteAsync(int busId, int tripId);
+        Task<bool> AssignBusToTripAsync(int tripId, int busId);
+        Task<bool> UnassignBusFromTripAsync(int tripId, int busId);
     }
 }

@@ -1,5 +1,6 @@
 using API.SignalR;
 using Core.DbContexts;
+using Core.Helper;
 using Infrastructure.Interfaces;
 using Infrastructure.Repos;
 using Infrastucture.DbContexts;
@@ -14,6 +15,7 @@ using Services.Services.Busv2Service;
 using Services.Services.DriverService;
 using Services.Services.IEmailService;
 using Services.Services.LostItemsService;
+using Services.Services.StopsService;
 using Services.Services.TokenService;
 using Services.Services.TrackingService;
 using Services.Services.TripService;
@@ -34,8 +36,9 @@ namespace SmartTrackingTransport
             builder.AddServiceDefaults();
 
             // Add services to the container.
-
             builder.Services.AddControllers();
+
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", builder =>
@@ -45,8 +48,7 @@ namespace SmartTrackingTransport
             });
 
             builder.Services.AddSignalR();
-            builder.Services.AddScoped<TrackingService>();
-
+           
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddDbContext<AppIdentityDbContext>(options =>
             {
@@ -70,6 +72,7 @@ namespace SmartTrackingTransport
             builder.Services.AddScoped<IUnitOfWorkv2, UnitOfWorkv2>();
             builder.Services.AddScoped<IBusv2Service, Busv2Service>();
             builder.Services.AddScoped<ITripv2Service, Tripv2Service>();
+            builder.Services.AddScoped<IStopsService, StopsService>();
             builder.Services.AddScoped<ITrackingService, TrackingService>();
             builder.Services.AddScoped<IBusTripService, BusTripService>();
             builder.Services.AddScoped<ILostItemsService, LostItemService>();
@@ -105,8 +108,6 @@ namespace SmartTrackingTransport
             app.MapControllers();
 
             app.Run();
-
-            await app.RunAsync();
 
         }
     }

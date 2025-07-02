@@ -16,8 +16,8 @@ namespace Services.Services.Busv2Service
 		Task<Busv2TripsDto> GetBusTripsFromOriginAsync(string busNumber, string origin, DateTime date);
 		Task<Busv2TripsDto> GetBusTripsToDestinationAsync(string busNumber, string destination, DateTime date);
 		Task<IEnumerable<Busv2Dto>> GetAvailableBusesAsync(string origin, string destination);
-		Task<bool> AddBusAsync(Busv2Dto busv2Dto);
-		Task<bool> UpdateBusAsync(int id, Busv2Dto busv2Dto);
+		Task<Busv2Dto?> AddBusAsync(Busv2Dto busv2Dto);
+        Task<bool> UpdateBusAsync(int id, Busv2Dto busv2Dto);
 		Task<bool> RemoveBusAsync(int id);
 		Task<Busv2Dto> GetBusByIdAsync(int id);
 		Task<bool> UpdateBusStatusAsync(int id, string status);

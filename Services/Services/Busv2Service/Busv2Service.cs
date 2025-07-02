@@ -27,12 +27,25 @@ namespace Services.Services.Busv2Service
             _mapper = mapper;
             this.context = context;
         }
-        public async Task<bool> AddBusAsync(Busv2Dto busv2Dto)
+        public async Task<Busv2Dto?> AddBusAsync(Busv2Dto busv2Dto)
         {
             busv2Dto.LicensePlate = GenerateLicensePlate();
+
             var bus = _mapper.Map<Bus>(busv2Dto);
             await _unitOfWork.Repository<Bus>().Add(bus);
-            return await _unitOfWork.Complete() > 0;
+            var success = await _unitOfWork.Complete() > 0;
+
+            if (!success) return null;
+
+            // Load full bus with Route + RouteStops + Stop for proper AutoMapper mapping
+            var savedBus = await _unitOfWork.Repository<Bus>()
+                .GetAll()
+                .Include(b => b.Route)
+                    .ThenInclude(r => r.RouteStops)
+                        .ThenInclude(rs => rs.Stop)
+                .FirstOrDefaultAsync(b => b.Id == bus.Id);
+
+            return _mapper.Map<Busv2Dto>(savedBus);
         }
 
         public async Task<IEnumerable<Busv2Dto>> GetAll()

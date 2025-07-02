@@ -1,56 +1,78 @@
-﻿using Infrastucture.DbContexts;
+﻿using AutoMapper;
+using Core.Entities;
+using Core.Helper;
+using Infrastucture.DbContexts;
 using Infrastucture.Entities;
+using Microsoft.EntityFrameworkCore;
 using Services.Services.TrackingService.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Core.Helper;
-using Core.Entities;
 
 namespace Services.Services.TrackingService
 {
     public class TrackingService : ITrackingService
     {
         private readonly TransportContext _context;
+        private const double AvgSpeedKmph = 40.0;
+        private readonly IMapper _mapper;
 
-        public TrackingService(TransportContext context)
+
+        public TrackingService(TransportContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
+
         }
-        public async Task<BusTrackingUpdateDto> ProcessTrackingAsync(TrackingDataDto dto)
+
+        public async Task<BusTrackingLiteDto> QuickUpdateBusLocationAsync(TrackingDataDto dto, DateTime timestamp)
         {
-            var bus = await _context.Bus
-                .Include(b => b.Route)
-                    .ThenInclude(r => r.RouteStops)
-                        .ThenInclude(rs => rs.Stop)
-                .FirstOrDefaultAsync(b => b.Id == dto.BusId);
+            var bus = await _context.Bus.FirstOrDefaultAsync(b => b.Id == dto.BusId);
+            if (bus == null) throw new Exception("Bus not found");
 
-            if (bus?.Route == null)
-                throw new Exception("Bus not assigned to a route");
-
-            //  Update the bus’s current coordinates
             bus.CurrentLatitude = dto.Latitude;
             bus.CurrentLongitude = dto.Longitude;
-            _context.Bus.Update(bus); // Make sure EF tracks the change
+            _context.Bus.Update(bus);
 
-            var tracking = new TrackingData
+            _context.TrackingData.Add(new TrackingData
             {
                 BusId = dto.BusId,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
-                Timestamp = DateTime.UtcNow
-            };
-
-            _context.TrackingData.Add(tracking);
+                Timestamp = timestamp
+            });
+            Console.WriteLine($" DTO.Latitude: {dto.Latitude}");
+            Console.WriteLine($" Tracked Latitude: {_context.Entry(bus).Property(b => b.CurrentLatitude).CurrentValue}");
 
             await _context.SaveChangesAsync();
+
+            return new BusTrackingLiteDto
+            {
+                BusId = dto.BusId,
+                Latitude = dto.Latitude,
+                Longitude = dto.Longitude,
+            };
+        }
+        public async Task<BusTrackingUpdateDto> GetBusCurrentTrackingAsync(int busId)
+        {
+            var bus = await _context.Bus
+                .Include(b => b.Driver) // 👈 Ensure Driver is included
+                .Include(b => b.Route)
+                    .ThenInclude(r => r.RouteStops)
+                        .ThenInclude(rs => rs.Stop)
+                .FirstOrDefaultAsync(b => b.Id == busId);
+
+            if (bus == null || bus.Route == null)
+                return null;
 
             var orderedStops = bus.Route.RouteStops
                 .OrderBy(rs => rs.Order)
                 .Select(rs => rs.Stop)
                 .ToList();
+
+            if (orderedStops.Count == 0)
+                return null;
 
             Stops nextStop = null;
             double minDistance = double.MaxValue;
@@ -58,8 +80,11 @@ namespace Services.Services.TrackingService
             foreach (var stop in orderedStops)
             {
                 double dist = GeoUtils.Haversine(
-                    (double)dto.Latitude, (double)dto.Longitude,
-                    (double)stop.Latitude, (double)stop.Longitude);
+                    (double)bus.CurrentLatitude,
+                    (double)bus.CurrentLongitude,
+                    (double)stop.Latitude,
+                    (double)stop.Longitude
+                );
 
                 if (dist < minDistance)
                 {
@@ -68,49 +93,65 @@ namespace Services.Services.TrackingService
                 }
             }
 
-            const double avgSpeedKmph = 40;
-            double timeHours = (minDistance / 1000.0) / avgSpeedKmph;
+            double timeHours = (minDistance / 1000.0) / AvgSpeedKmph;
             int etaMinutes = (int)Math.Round(timeHours * 60);
 
             return new BusTrackingUpdateDto
             {
-                BusId = dto.BusId,
-                Latitude = dto.Latitude,
-                Longitude = dto.Longitude,
+                BusId = bus.Id,
+                Latitude = bus.CurrentLatitude,
+                Longitude = bus.CurrentLongitude,
                 NextStopName = nextStop?.Name ?? "Unknown",
                 DistanceToNextStopMeters = Math.Round(minDistance),
-                EstimatedTimeMinutes = etaMinutes
+                EstimatedTimeMinutes = etaMinutes,
+                DriverId = bus.Driver?.Id,
+                DriverName = bus.Driver?.Name
             };
         }
-        public async Task<List<DriverTrackingSummaryDto>> GetAllDriverTrackingSummariesAsync()
+        public async Task<LocationDto> GetBusLocationOnlyAsync(int busId)
         {
-            return await _context.Bus
-                .Include(b => b.Driver)
-                .Include(b => b.Route)
-                    .ThenInclude(r => r.RouteStops)
-                        .ThenInclude(rs => rs.Stop)
-                .Include(b => b.TrackingData)
-                .Where(b => b.Driver != null && b.Route != null)
-                .Select(b => new DriverTrackingSummaryDto
-                {
-                    DriverName = b.Driver.Name,
-                    PhoneNumber = b.Driver.PhoneNumber,
+            var bus = await _context.Bus
+                .FirstOrDefaultAsync(b => b.Id == busId);
 
-                    BusLicensePlate = b.LicensePlate,
-                    BusModel = b.Model,
+            if (bus == null)
+                return null;
 
-                    RouteOrigin = b.Route.Origin,
-                    RouteDestination = b.Route.Destination,
+            return _mapper.Map<LocationDto>(bus);
+        }
+        public async Task<List<NearbyBusDto>> GetNearbyBusesAsync(decimal userLat, decimal userLon, double radiusMeters)
+        {
+            double radiusKm = radiusMeters / 1000.0;
+            double lat = (double)userLat;
+            double lon = (double)userLon;
 
-                    CurrentLatitude = b.CurrentLatitude,
-                    CurrentLongitude = b.CurrentLongitude,
+            double latDiff = radiusKm / 110.574;
+            double lonDiff = radiusKm / (111.320 * Math.Cos(lat * Math.PI / 180));
 
-                    LastTrackedAt = b.TrackingData
-                        .OrderByDescending(t => t.Timestamp)
-                        .Select(t => (DateTime?)t.Timestamp)
-                        .FirstOrDefault()
-                })
+            var minLat = lat - latDiff;
+            var maxLat = lat + latDiff;
+            var minLon = lon - lonDiff;
+            var maxLon = lon + lonDiff;
+
+            var candidates = await _context.Bus
+                .Include(b => b.Route) // Include Route info
+                .Where(b => b.CurrentLatitude >= (decimal)minLat && b.CurrentLatitude <= (decimal)maxLat
+                         && b.CurrentLongitude >= (decimal)minLon && b.CurrentLongitude <= (decimal)maxLon)
                 .ToListAsync();
+
+            var nearbyBuses = candidates
+                .Where(b => GeoUtils.Haversine(lat, lon, (double)b.CurrentLatitude, (double)b.CurrentLongitude) <= radiusMeters)
+                .Select(b => new NearbyBusDto
+                {
+                    BusId = b.Id,
+                    Latitude = b.CurrentLatitude,
+                    Longitude = b.CurrentLongitude,
+                    DriverId = b.DriverId,
+                    Origin = b.Route?.Origin,
+                    Destination = b.Route?.Destination
+                })
+                .ToList();
+
+            return nearbyBuses;
         }
     }
 }

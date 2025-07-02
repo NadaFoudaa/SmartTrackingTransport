@@ -34,6 +34,19 @@ namespace Infrastucture.DbContexts
 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 			base.OnModelCreating(modelBuilder);
-		}
+            modelBuilder.Entity<TrackingData>(entity =>
+            {
+                entity.Property(e => e.Latitude).HasPrecision(18, 7);
+                entity.Property(e => e.Longitude).HasPrecision(18, 7);
+            });
+
+
+
+            modelBuilder.Entity<Stops>(entity =>
+            {
+                entity.Property(e => e.Latitude).HasPrecision(18, 7);
+                entity.Property(e => e.Longitude).HasPrecision(18, 7);
+            });
+        }
 	}
 }
