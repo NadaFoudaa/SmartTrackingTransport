@@ -15,9 +15,10 @@ using Services.Services.Busv2Service;
 using Services.Services.DriverService;
 using Services.Services.IEmailService;
 using Services.Services.LostItemsService;
-using Services.Services.SeatService;
 using Services.Services.StopsService;
 using Services.Services.TokenService;
+using Services.Services.PasswordResetService;
+using Services.Services.SeatService;
 using Services.Services.TrackingService;
 using Services.Services.TripService;
 using Services.Services.Tripv2Service;
@@ -79,7 +80,8 @@ namespace SmartTrackingTransport
             builder.Services.AddScoped<ISeatService, SeatService>();
             builder.Services.AddScoped<ILostItemsService, LostItemService>();
             builder.Services.AddScoped<IDriverService, DriverService>();
-            builder.Services.AddIdentityService(builder.Configuration);
+			builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+			builder.Services.AddIdentityService(builder.Configuration);
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
             {
@@ -88,9 +90,11 @@ namespace SmartTrackingTransport
 
                 await AppIdentityDbContextSeed.SeedRolesAsync(roleManager);
                 await AppIdentityDbContextSeed.SeedDefaultAdminUserAsync(userManager);
-            }
+				await AppIdentityDbContextSeed.SeedDefaultDriverUserAsync(userManager);
 
-            app.MapHub<TrackingHub>("/trackingHub");
+			}
+
+			app.MapHub<TrackingHub>("/trackingHub");
 
             app.MapDefaultEndpoints();
 

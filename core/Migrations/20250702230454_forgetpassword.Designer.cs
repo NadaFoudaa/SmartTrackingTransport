@@ -4,6 +4,7 @@ using Infrastucture.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Core.Migrations
 {
     [DbContext(typeof(TransportContext))]
-    partial class TransportContextModelSnapshot : ModelSnapshot
+    [Migration("20250702230454_forgetpassword")]
+    partial class forgetpassword
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -285,36 +288,6 @@ namespace Core.Migrations
                     b.ToTable("Routes");
                 });
 
-            modelBuilder.Entity("Infrastucture.Entities.Seat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsReserved")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SeatNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TripId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TripId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Seats");
-                });
-
             modelBuilder.Entity("Infrastucture.Entities.TrackingData", b =>
                 {
                     b.Property<int>("Id")
@@ -441,23 +414,6 @@ namespace Core.Migrations
                     b.Navigation("Route");
                 });
 
-            modelBuilder.Entity("Infrastucture.Entities.Seat", b =>
-                {
-                    b.HasOne("Core.Entities.Trips", "Trips")
-                        .WithMany("Seats")
-                        .HasForeignKey("TripId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Infrastucture.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Trips");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Infrastucture.Entities.TrackingData", b =>
                 {
                     b.HasOne("Core.Entities.Bus", "Bus")
@@ -484,8 +440,6 @@ namespace Core.Migrations
             modelBuilder.Entity("Core.Entities.Trips", b =>
                 {
                     b.Navigation("BusTrips");
-
-                    b.Navigation("Seats");
                 });
 
             modelBuilder.Entity("Infrastucture.Entities.Driver", b =>

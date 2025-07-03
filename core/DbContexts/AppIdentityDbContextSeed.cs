@@ -41,5 +41,24 @@ namespace Core.DbContexts
 				await userManager.AddToRoleAsync(adminUser, AppRoles.Admin);
 			}
 		}
+		public static async Task SeedDefaultDriverUserAsync(UserManager<AppUser> userManager)
+		{
+			const string driverEmail = "driver@smarttracking.com";
+			var driverUser = await userManager.FindByEmailAsync(driverEmail);
+
+			if (driverUser == null)
+			{
+				driverUser = new AppUser
+				{
+					UserName = driverEmail,
+					Email = driverEmail,
+					DisplayName = "Default Driver",
+					EmailConfirmed = true
+				};
+
+				await userManager.CreateAsync(driverUser, "Driver@1234"); // You should change this password in production
+				await userManager.AddToRoleAsync(driverUser, AppRoles.Driver);
+			}
+		}
 	}
 }
