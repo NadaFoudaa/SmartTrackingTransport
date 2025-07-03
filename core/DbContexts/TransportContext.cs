@@ -23,6 +23,7 @@ namespace Infrastucture.DbContexts
 
         public DbSet<Trips> Trip { get; set; }
         public DbSet<Bus> Bus { get; set; }
+        public DbSet<Seat> Seats { get; set; }
 
         public DbSet<TrackingData> TrackingData { get; set; }
         public DbSet<LostItem> LostItems { get; set; }

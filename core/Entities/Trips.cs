@@ -19,6 +19,7 @@ namespace Core.Entities
         public Driver Driver { get; set; }
         public TripStatus Status { get; set; }   // Online, Paused, OutOfService
         public bool IsDeleted { get; set; }
+        public ICollection<Seat> Seats { get; set; }
         public ICollection<BusTrip> BusTrips { get; set; }
     }
 }

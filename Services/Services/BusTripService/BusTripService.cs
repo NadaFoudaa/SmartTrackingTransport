@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Entities;
 using Infrastructure.Interfaces;
+using Infrastucture.Entities;
 using Services.Services.BusTripService.DTO;
 using System;
 using System.Collections.Generic;
@@ -57,6 +58,7 @@ namespace Services.Services.BusTripService
             var tripRepo = _unitOfWork.Repository<Trips>();
             var busRepo = _unitOfWork.Repository<Bus>();
             var busTripRepo = _unitOfWork.Repository<BusTrip>();
+            var seatRepo = _unitOfWork.Repository<Seat>();
 
             var trip = await tripRepo.GetByIdAsync(tripId);
             var bus = await busRepo.GetByIdAsync(busId);
@@ -66,16 +68,34 @@ namespace Services.Services.BusTripService
             var alreadyAssigned = (await busTripRepo.FindAllAsync(bt => bt.BusId == busId && bt.TripsId == tripId)).Any();
             if (alreadyAssigned) return false;
 
-            // Link bus to trip
+            // Assign bus
             busTripRepo.Add(new BusTrip
             {
                 BusId = busId,
                 TripsId = tripId
             });
 
-            // Update the bus's route to reflect the trip's route
+            // Update bus route
             bus.RouteId = trip.RouteId;
             busRepo.Update(bus);
+
+            // Generate seats only if not already generated
+            var existingSeats = await seatRepo.FindAllAsync(s => s.TripId == tripId);
+            if (!existingSeats.Any())
+            {
+                var seats = new List<Seat>();
+                for (int i = 1; i <= bus.Capacity; i++)
+                {
+                    seats.Add(new Seat
+                    {
+                        TripId = tripId,
+                        SeatNumber = i.ToString("D2"),
+                        IsReserved = false
+                    });
+                }
+
+                await seatRepo.AddRangeAsync(seats);
+            }
 
             await _unitOfWork.Complete();
             return true;
@@ -84,27 +104,34 @@ namespace Services.Services.BusTripService
         {
             var busTripRepo = _unitOfWork.Repository<BusTrip>();
             var busRepo = _unitOfWork.Repository<Bus>();
+            var seatRepo = _unitOfWork.Repository<Seat>();
 
-            // Find the bus-trip mapping
-            var mapping = (await busTripRepo.FindAllAsync(bt => bt.TripsId == tripId && bt.BusId == busId))
-                            .FirstOrDefault();
-
+            // 1. Find the mapping
+            var mapping = (await busTripRepo.FindAllAsync(bt => bt.TripsId == tripId && bt.BusId == busId)).FirstOrDefault();
             if (mapping == null) return false;
 
-            // Remove the mapping
+            // 2. Remove the mapping
             busTripRepo.Delete(mapping);
 
-            // Check if the bus is still used in other trips
+            // 3. Clear RouteId if not used elsewhere
             var stillAssigned = (await busTripRepo.FindAllAsync(bt => bt.BusId == busId && bt.TripsId != tripId)).Any();
-
             if (!stillAssigned)
             {
-                // Only clear RouteId if the bus isn't used in any other trip
                 var bus = await busRepo.GetByIdAsync(busId);
                 if (bus != null)
                 {
                     bus.RouteId = null;
                     busRepo.Update(bus);
+                }
+            }
+
+            // 4. Delete seats for this trip
+            var seats = await seatRepo.FindAllAsync(s => s.TripId == tripId);
+            if (seats.Any())
+            {
+                foreach (var seat in seats)
+                {
+                    seatRepo.Delete(seat);
                 }
             }
 

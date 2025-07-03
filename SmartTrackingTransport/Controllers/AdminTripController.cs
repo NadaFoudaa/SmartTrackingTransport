@@ -29,7 +29,6 @@ namespace SmartTrackingTransport.Controllers
             var tripDto = _mapper.Map<Tripv2Dto>(trip);
             return Ok(tripDto);
         }
-
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTrip(int id, CRUDTripDto dto)
         {

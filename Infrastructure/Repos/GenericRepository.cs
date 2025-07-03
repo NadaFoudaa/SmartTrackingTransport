@@ -89,5 +89,14 @@ namespace Infrastructure.Repos
         {
             return _transportContext.Set<T>();
         }
+        public IQueryable<T> GetQueryable()
+        {
+            return _transportContext.Set<T>().AsQueryable();
+        }
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _transportContext.Set<T>().AddRangeAsync(entities); 
+        }
+
     }
 }

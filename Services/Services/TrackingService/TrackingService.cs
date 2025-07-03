@@ -133,21 +133,33 @@ namespace Services.Services.TrackingService
             var maxLon = lon + lonDiff;
 
             var candidates = await _context.Bus
-                .Include(b => b.Route) // Include Route info
+                .Include(b => b.Route)
+                    .ThenInclude(r => r.RouteStops)
+                        .ThenInclude(rs => rs.Stop)
                 .Where(b => b.CurrentLatitude >= (decimal)minLat && b.CurrentLatitude <= (decimal)maxLat
                          && b.CurrentLongitude >= (decimal)minLon && b.CurrentLongitude <= (decimal)maxLon)
                 .ToListAsync();
 
             var nearbyBuses = candidates
                 .Where(b => GeoUtils.Haversine(lat, lon, (double)b.CurrentLatitude, (double)b.CurrentLongitude) <= radiusMeters)
-                .Select(b => new NearbyBusDto
+                .Select(b =>
                 {
-                    BusId = b.Id,
-                    Latitude = b.CurrentLatitude,
-                    Longitude = b.CurrentLongitude,
-                    DriverId = b.DriverId,
-                    Origin = b.Route?.Origin,
-                    Destination = b.Route?.Destination
+                    var orderedStops = b.Route?.RouteStops?
+                        .OrderBy(rs => rs.Order)
+                        .ToList();
+
+                    var origin = orderedStops?.FirstOrDefault()?.Stop?.Name;
+                    var destination = orderedStops?.LastOrDefault()?.Stop?.Name;
+
+                    return new NearbyBusDto
+                    {
+                        BusId = b.Id,
+                        Latitude = b.CurrentLatitude,
+                        Longitude = b.CurrentLongitude,
+                        DriverId = b.DriverId,
+                        Origin = origin,
+                        Destination = destination
+                    };
                 })
                 .ToList();
 

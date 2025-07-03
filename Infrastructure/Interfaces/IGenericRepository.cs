@@ -20,6 +20,8 @@ namespace Infrastructure.Interfaces
         Task<T?> GetFirstOrDefaultIncludingAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
         Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
         IQueryable<T> GetAll();
+        IQueryable<T> GetQueryable();
+        Task AddRangeAsync(IEnumerable<T> entities);
 
     }
 }

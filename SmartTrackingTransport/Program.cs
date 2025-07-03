@@ -15,6 +15,7 @@ using Services.Services.Busv2Service;
 using Services.Services.DriverService;
 using Services.Services.IEmailService;
 using Services.Services.LostItemsService;
+using Services.Services.SeatService;
 using Services.Services.StopsService;
 using Services.Services.TokenService;
 using Services.Services.TrackingService;
@@ -75,6 +76,7 @@ namespace SmartTrackingTransport
             builder.Services.AddScoped<IStopsService, StopsService>();
             builder.Services.AddScoped<ITrackingService, TrackingService>();
             builder.Services.AddScoped<IBusTripService, BusTripService>();
+            builder.Services.AddScoped<ISeatService, SeatService>();
             builder.Services.AddScoped<ILostItemsService, LostItemService>();
             builder.Services.AddScoped<IDriverService, DriverService>();
             builder.Services.AddIdentityService(builder.Configuration);

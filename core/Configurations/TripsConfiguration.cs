@@ -36,6 +36,10 @@ namespace Core.Configurations
 
             builder.Property(t => t.IsDeleted)
                    .HasDefaultValue(false);
+            builder.HasMany(t => t.Seats)
+             .WithOne(s => s.Trips)
+              .HasForeignKey(s => s.TripId)
+            .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

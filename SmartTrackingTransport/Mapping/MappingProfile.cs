@@ -8,6 +8,7 @@ using Services.Services.Busv2Service.DTO;
 using Services.Services.DriverService.DTO;
 using Services.Services.LostItemsService.DTO;
 using Services.Services.RouteService.Dto;
+using Services.Services.SeatService.DTO;
 using Services.Services.StopsService.DTO;
 using Services.Services.TrackingService.DTO;
 using Services.Services.TripService.DTO;
@@ -113,7 +114,19 @@ namespace SmartTrackingTransport.Mappings
                 .ForMember(d => d.BusNumber, o => o.MapFrom(s => s.LicensePlate))
                 .ForMember(d => d.Origin, o => o.MapFrom(s => GetOriginName(s)))
                 .ForMember(d => d.Destination, o => o.MapFrom(s => GetDestinationName(s)));
+            // Trip
+            CreateMap<CRUDTripDto, Trips>();
+            CreateMap<Trips, TripOperationDto>();
+            CreateMap<Trips, Tripv2Dto>();
+            CreateMap<TripOperationDto, Tripv2Dto>();
 
+
+            // Bus
+            CreateMap<Bus, Busv2Dto>().ReverseMap();
+
+            // Seat
+            CreateMap<Seat, SeatDto>();
+            CreateMap<SeatDto, Seat>();
             CreateMap<Bus, Busv2TripDetailsDto>()
                 .ForMember(d => d.BusNumber, o => o.MapFrom(s => s.LicensePlate))
                 .ForMember(d => d.Origin, o => o.MapFrom(s => GetOriginName(s)))
