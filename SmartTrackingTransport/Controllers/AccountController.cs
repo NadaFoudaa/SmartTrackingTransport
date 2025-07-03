@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Services.Services.UserService;
 using Services.Services.UserService.Dto;
+using Services.Services.PasswordResetService;
 using SmartTrackingTransport.Extensions.ExceptionsHandler;
 using System.Security.Claims;
 using Google.Apis.Auth;
@@ -16,16 +17,18 @@ namespace SmartTrackingTransport.Controllers
 	[Route("api/[controller]")]
 	public class AccountController : ControllerBase
 	{
-		
+
 		private readonly IUserService _userService;
 		private readonly UserManager<AppUser> _userManager;
 		private readonly Services.Services.IEmailService.IEmailService _emailService;
+		private readonly IPasswordResetService _passwordResetService;
 
-		public AccountController(IUserService userService , UserManager<AppUser> userManager,Services.Services.IEmailService.IEmailService emailService)
+		public AccountController(IUserService userService, UserManager<AppUser> userManager, Services.Services.IEmailService.IEmailService emailService, IPasswordResetService passwordResetService)
 		{
 			_userService = userService;
 			_userManager = userManager;
 			_emailService = emailService;
+			_passwordResetService = passwordResetService;
 		}
 		[HttpPost("register")]
 		public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
@@ -70,23 +73,21 @@ namespace SmartTrackingTransport.Controllers
 			var user = await _userManager.FindByEmailAsync(dto.Email);
 			if (user == null) return NotFound("User not found");
 
-			// Generate a password reset token
-			var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+			// Generate a random 6-digit code
+			var resetCode = await _passwordResetService.GenerateResetCodeAsync(dto.Email);
 
-
-
-			// Create email content
-			var resetLink = $"http://smarttrackingapp.runasp.net/redirect-to-app?email={dto.Email}&code={Uri.EscapeDataString(token)}";
+			// Create email content with the code
 			var emailBody = $@"
         <p>Hello,</p>
-        <p>You requested a password reset. Click the link below to reset your password:</p>
-        <a href='{resetLink}'>Reset Password</a>
+        <p>You requested a password reset. Use the code below in your app to reset your password:</p>
+        <h2 style='font-size: 24px; color: #007bff; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;'>{resetCode}</h2>
+        <p><strong>This code will expire in 15 minutes.</strong></p>
         <p>If you did not request this, please ignore this email.</p>
     ";
 
-			await _emailService.SendEmailAsync(dto.Email, "Password Reset Request", emailBody);
+			await _emailService.SendEmailAsync(dto.Email, "Password Reset Code", emailBody);
 
-			return Ok("Password reset email sent");
+			return Ok("Password reset code sent to your email");
 		}
 		[HttpGet("redirect-to-app")]
 		public IActionResult RedirectToApp([FromQuery] string email, [FromQuery] string code)
@@ -128,13 +129,24 @@ namespace SmartTrackingTransport.Controllers
 			var user = await _userManager.FindByEmailAsync(dto.Email);
 			if (user == null) return NotFound("User not found");
 
-			// Reset the password
-			var result = await _userManager.ResetPasswordAsync(user, dto.Code, dto.NewPassword);
+			// Validate the reset code
+			var isValidCode = await _passwordResetService.ValidateResetCodeAsync(dto.Email, dto.Code);
+			if (!isValidCode)
+			{
+				return BadRequest("Invalid or expired reset code");
+			}
+
+			// Reset the password using Identity
+			var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+			var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
 			if (!result.Succeeded)
 			{
 				var errors = result.Errors.Select(e => e.Description);
 				return BadRequest(new { Errors = errors });
 			}
+
+			// Mark the code as used
+			await _passwordResetService.MarkCodeAsUsedAsync(dto.Email, dto.Code);
 
 			return Ok("Password reset successfully");
 		}
@@ -161,7 +173,7 @@ namespace SmartTrackingTransport.Controllers
 			var userDto = await _userService.CreateToken(user);
 			return Ok(userDto);
 		}
-		
+
 
 	}
 }

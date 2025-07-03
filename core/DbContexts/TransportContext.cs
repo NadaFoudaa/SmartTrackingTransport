@@ -27,9 +27,10 @@ namespace Infrastucture.DbContexts
         public DbSet<TrackingData> TrackingData { get; set; }
         public DbSet<LostItem> LostItems { get; set; }
 
+		public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
